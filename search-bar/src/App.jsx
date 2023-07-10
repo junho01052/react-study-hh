@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { styled } from "styled-components";
 import axios from "axios";
+import { useQuery } from "react-query";
+import { getApi } from "./api/getApi";
 
 const Item = ({ e }) => {
   return (
@@ -30,49 +32,68 @@ const Option = ({ e, setSearchBookName }) => {
 const App = () => {
   const [searchBookName, setSearchBookName] = useState("");
   const [book, setBook] = useState([]);
-  const [reFetch, setReFetch] = useState(false);
+  // const [reFetch, setReFetch] = useState(false);
   const [option, setOption] = useState("");
   // const enterRef = useRef(null);
 
   // const data = book.map((e) => e.title);
   // console.log(data);
 
-  const onChangeSearchBookName = (e) => {
-    setSearchBookName(e.target.value);
-  };
+  // const onChangeSearchBookName = (e) => {
+  //   setSearchBookName(e.target.value);
+  // };
+
+  // const handleOnKeyPress = (e) => {
+  //   if (e.key === "Enter") {
+  //     setBook([...book]);
+  //     setReFetch(!reFetch);
+  //   }
+  // };
 
   const handleOnKeyPress = (e) => {
     if (e.key === "Enter") {
-      setBook([...book]);
-      setReFetch(!reFetch);
+      getApi();
     }
   };
 
-  useEffect(() => {
-    const getApi = async () => {
-      try {
-        const response = await axios.get(`https://dapi.kakao.com/v3/search/book`, {
-          headers: {
-            Authorization: `KakaoAK ${import.meta.env.VITE_API_KEY}`,
-          },
-          params: {
-            sort: "accurancy",
-            // page: 1,
-            size: 10,
-            query: searchBookName,
-            // target: "title", //제목으로만 검색할 수 있게 함
-          },
-        });
-        // console.log(response);
-        setBook([...response.data.documents]);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    if (searchBookName.length > 0) {
-      getApi();
-    }
-  }, [reFetch]);
+  getApi();
+
+  const { isLoading, isError, data } = useQuery("getApi", getApi());
+
+  if (isLoading) {
+    return <h1>로딩 중</h1>;
+  }
+  if (isError) {
+    return <h1>오류 발생</h1>;
+  }
+
+  console.log(data);
+
+  // useEffect(() => {
+  //   const getApi = async () => {
+  //     try {
+  //       const response = await axios.get(`https://dapi.kakao.com/v3/search/book`, {
+  //         headers: {
+  //           Authorization: `KakaoAK ${import.meta.env.VITE_API_KEY}`,
+  //         },
+  //         params: {
+  //           sort: "accurancy",
+  //           // page: 1,
+  //           size: 10,
+  //           query: searchBookName,
+  //           // target: "title", //제목으로만 검색할 수 있게 함
+  //         },
+  //       });
+  //       // console.log(response);
+  //       setBook([...response.data.documents]);
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //   };
+  //   if (searchBookName.length > 0) {
+  //     getApi();
+  //   }
+  // }, [reFetch]);
 
   useEffect(() => {
     const getBookTitle = async () => {
@@ -121,8 +142,8 @@ const App = () => {
           </div>
         </header>
         <div className="itemList-style">
-          {book &&
-            book.map((e) => {
+          {data &&
+            data.map((e) => {
               return <Item key={e.isbn} e={e} />;
             })}
         </div>
