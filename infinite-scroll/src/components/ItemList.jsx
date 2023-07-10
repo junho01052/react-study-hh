@@ -1,73 +1,44 @@
 import Item from "./Item";
 import { useEffect, useState } from "react";
 import axios from "axios";
-// import { loadDogs } from "../api/dogs";
-// import { useQuery } from "react-query";
+import { loadDogs } from "../api/dogs";
+import { useQuery } from "react-query";
+import { useInfiniteQuery } from "react-query";
+import InfiniteScroll from "react-infinite-scroller";
+import { current } from "@reduxjs/toolkit";
 
 const ItemList = () => {
-  const [dogs, setDogs] = useState([]);
-
-  //리액트 쿼리
-  //   const [isLoading, isError, data] = useQuery("dogs", loadDogs);
-
-  const loadDogs = async () => {
-    await axios
-      .get(`https://api.thedogapi.com/v1/images/search`, {
-        headers: {
-          "x-api-key": `${import.meta.env.VITE_API_KEY}`,
-        },
-        params: {
-          limit: 10,
-          has_breeds: true,
-        },
-      })
-      .then(({ data }) => {
-        //   console.log(data);
-        const newDog = [];
-        data.forEach((dog) => newDog.push(dog));
-        setDogs((prevDog) => {
-          return [...prevDog, ...newDog];
-        });
-        //   console.log(newDog);
-      });
-  };
-
-  //리액트 쿼리
-  //   if (isLoading) {
-  //     return <h1>로딩중입니다</h1>;
-  //   }
-  //   if (isError) {
-  //     return <h1>오류가 발생했습니다</h1>;
-  //   }
-
-  const infiniteScroll = (e) => {
-    // console.log(e.target.documentElement.scrollTop);
-    // console.log(e.target.documentElement.scrollHeight);
-    if (window.innerHeight + e.target.documentElement.scrollTop + 1 >= e.target.documentElement.scrollHeight) {
-      loadDogs();
+  const { data, fetchNextPage, hasNextPage, isFetching, isLoading, isError, error } = useInfiniteQuery(
+    "dogs",
+    ({ pageParam = 0 }) => loadDogs(pageParam),
+    {
+      getNextPageParam: (lastPage, allPages) => {
+        // console.log(allPages);
+        return allPages.length;
+      },
     }
-  };
+  );
 
-  useEffect(() => {
-    loadDogs();
-    window.addEventListener("scroll", infiniteScroll);
-  }, []);
-
-  const set = new Set(dogs);
-  const filterDogs = [...set];
-  //   console.log(filterDogs);
+  // console.log(data);
 
   //리액트 쿼리
-  //   const set = new Set(data);
-  //   const filterDogs = [...set];
-  //   console.log(filterDogs);
+  if (isLoading) {
+    return <h1>로딩중입니다</h1>;
+  }
+  if (isError) {
+    return <h1>{error.toString()}</h1>;
+  }
 
   return (
     <>
-      {filterDogs &&
-        filterDogs.map((dog) => {
-          return <Item key={dog.id} dog={dog} />;
+      {isFetching && <h3>Loading...</h3>}
+      <InfiniteScroll loadMore={fetchNextPage} hasMore={hasNextPage}>
+        {data.pages.map((pageData) => {
+          return pageData.map((dog) => {
+            return <Item key={dog.id} dog={dog} />;
+          });
         })}
+      </InfiniteScroll>
     </>
   );
 };

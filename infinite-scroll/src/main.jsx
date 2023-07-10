@@ -4,11 +4,13 @@ import { QueryClientProvider } from "react-query";
 import { QueryClient } from "react-query";
 import App from "./App.jsx";
 import "./index.css";
+import { ReactQueryDevtools } from "react-query/devtools";
 
 const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <QueryClientProvider client={queryClient}>
     <App />
+    <ReactQueryDevtools />
   </QueryClientProvider>
 );

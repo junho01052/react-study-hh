@@ -1,12 +1,12 @@
 import axios from "axios";
 
-const loadDogs = async () => {
-  const response = await axios.get(`https://api.thedogapi.com/v1/images/search`, {
+const loadDogs = async (page) => {
+  const response = await axios.get(import.meta.env.VITE_API_URL, {
     headers: {
       "x-api-key": `${import.meta.env.VITE_API_KEY}`,
     },
     params: {
-      limit: 10,
+      limit: 6,
       has_breeds: true,
     },
   });
