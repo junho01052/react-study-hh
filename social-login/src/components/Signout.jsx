@@ -8,15 +8,16 @@ const SignOut = () => {
 
   const onClickSignout = async () => {
     await axios({
-      url: "https://kapi.kakao.com/v1/user/logout",
+      url: "https://kapi.kakao.com/v1/user/unlink",
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
       .then((res) => {
+        console.log(res);
         localStorage.removeItem("token");
-        navigate("/");
+        window.location.replace("/");
       })
       .catch((err) => console.log(err));
   };
